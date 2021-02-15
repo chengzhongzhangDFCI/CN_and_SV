@@ -1,14 +1,14 @@
-addpath /czlab/chzhang/CodeBase/matlab/hg38
+%addpath /czlab/chzhang/CodeBase/matlab/hg38
 load hg38.bins.mat
 load hg38.mat
 load ChrArms.mat
 
-addpath /singlecellcenter/RPE-1/CN_analysis/ 
+%addpath /singlecellcenter/RPE-1/CN_analysis/ 
 
 ReadDepthNormalization;
 AllelicDepthProcessing;
 
-%load SampleInfo.mat
+load SampleInfo.mat
 %load SI_binnedCov.mat
 %load SI_BinnedAllelicRatio.mat 
 
