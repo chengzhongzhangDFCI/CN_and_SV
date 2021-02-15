@@ -1,4 +1,4 @@
-addpath /czlab/chzhang/CodeBase/matlab/hg38
+%addpath /czlab/chzhang/CodeBase/matlab/hg38
 load hg38.mat
 load ChrArms.mat
 CHRs=ChrLabels(1:23);
