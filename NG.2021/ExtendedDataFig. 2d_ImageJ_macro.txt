@@ -1,0 +1,121 @@
+open(File.openDialog("Select_BLU"));
+Z1=getImageID();
+run("Duplicate...", "title=Blue.tif duplicate range");
+run("Duplicate...", "title=Blue1.tif duplicate range");
+Z5=getImageID();
+run("Z Project...", "projection=[Max Intensity]");
+rename("dapiMAX.tif");
+Z7=getImageID();
+selectImage(Z5);
+run("Close");
+waitForUser("Continue")
+selectImage(Z1);
+
+run("Open Next");
+Z2=getImageID();
+run("Duplicate...", "title=Red.tif duplicate range");
+run("Duplicate...", "title=Red1.tif duplicate range");
+selectImage(Z2);
+
+/*
+run("Open Next");
+Z3=getImageID();
+run("Duplicate...", "title=Red.tif duplicate range");
+run("Duplicate...", "title=Red1.tif duplicate range");
+Z6=getImageID();
+run("Z Project...", "projection=[Max Intensity]");
+rename("RedMAX.tif");
+Z8=getImageID();
+selectImage(Z6);
+run("Close");
+
+waitForUser('continue');
+
+selectImage(Z3);
+run("Open Next");
+Z4=getImageID();
+run("Duplicate...", "title=Gray.tif duplicate range");
+selectImage(Z4);
+run("Close");
+*/
+
+run("Merge Channels...", "c1=[Red.tif] c3=[Blue.tif] create");
+selectImage("Composite");
+rename(File.name);
+run("Z Project...", "projection=[Max Intensity]");
+Z0=getImageID();
+waitForUser("Select area to analyze");
+getSelectionBounds(x, y, width, height);
+
+roiManager("reset");
+run("Clear Results");
+selectImage(Z7);
+makeRectangle(x, y, width, height);
+run("Crop");
+run("Measure");
+avg1=getResult("Mean");
+stdev1=getResult("StdDev");
+thresh1=avg1+stdev1;
+thresh2=getResult("Max");
+setThreshold(thresh1, thresh2);
+run("Convert to Mask");
+
+run("Watershed");
+run("Analyze Particles...", "size=100-Infinity circularity=0.00-1.00 show=Nothing include add");
+
+/*
+run("Clear Results");
+selectImage(Z8);
+makeRectangle(x, y, width, height);
+run("Crop");
+roiManager("Sort");
+roiManager("Multi Measure");
+avg2=getResult("Mean1");
+stdev2=getResult("StdDev1");
+thresh3=avg2+(2*stdev2);
+run("Measure");
+thresh4=getResult("Max");
+setThreshold(thresh3, thresh4);
+run("Convert to Mask");
+run("Analyze Particles...", "size=70-Infinity circularity=0.00-1.00 show=Nothing include add");
+run("Clear Results");
+*/
+
+selectImage(Z0);
+makeRectangle(x, y, width, height);
+run("Crop");
+waitForUser("Select area for background");
+run("Add to Manager");
+Nroi=roiManager("count")-1;
+roiManager("select", Nroi);
+roiManager("Multi Measure");
+bg=newArray(nResults);
+for (i=0; i<bg.length; i++) {
+	bg[i]=getResult("Mean1", i);
+}
+
+roiManager("select", Nroi);
+waitForUser("Measure PN intensity");
+roiManager("Multi Measure");
+
+dapi1=newArray(nResults);
+dapi2=newArray(nResults);
+for (j=0; j<dapi1.length; j++) {
+	dapi1[j]=getResult("IntDen1", j);
+	dapi2[j]=getResult("Area1", j);
+}
+
+waitForUser("Measure MN intensity");
+roiManager("Multi Measure");
+
+MN1=newArray(nResults);
+MN2=newArray(nResults);
+for (k=0; k<MN1.length; k++) {
+	MN1[k]=getResult("IntDen1", k);
+	MN2[k]=getResult("Area1", k);
+}
+
+Array.show("Output", bg, dapi1, dapi2, MN1, MN2);
+
+waitForUser("Done? (closes all images)");
+close("*");
